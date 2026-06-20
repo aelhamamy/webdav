@@ -47,6 +47,24 @@ docker run -d \
   aelhamamy/webdav
 #+END_SRC
 
+** Docker Compose
+
+#+BEGIN_SRC yaml
+services:
+  secure-webdav:
+    image: aelhamamy/webdav
+    container_name: secure-webdav
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - WEBDAV_USER=myuser
+      - WEBDAV_PASS=SuperSecurePass99!
+      - WEBDAV_REALM=My Secure Cloud
+    volumes:
+      - /home/user/share:/var/lib/dav
+#+END_SRC
+
 * Persistent Storage
 
 To persist your files, mount a host directory to the container's storage path (~/var/lib/dav~):
