@@ -1,0 +1,80 @@
+#+TITLE: Custom Apache WebDAV Server with Nord Theme
+#+OPTIONS: toc:nil num:nil
+
+A lightweight and secure Apache-based WebDAV server built on Ubuntu 26.04. This image features automated runtime credential bootstrapping, HTTP Digest Authentication, and a minimalist Nord Dark theme for the directory index view.
+
+* Features
+
+- *Nord Dark Theme* :: Custom dark theme (~#2e3440~) applied to the directory listing, replacing browser defaults with high-readability frost blues and mint greens.
+- *Dynamic Bootstrapping* :: Automatically configures the user, password, and authentication realm on container startup via environment variables.
+- *Secure Authentication* :: Uses HTTP Digest Authentication (~htdigest~) out of the box instead of insecure Basic Auth.
+- *Native Logging* :: Apache access and error logs are routed to ~stdout~/~stderr~ for standard Docker log handling.
+
+* Quick Start
+
+Run the container with default settings (user ~admin~, password ~password123~):
+
+#+BEGIN_SRC bash
+docker run -d \
+  -p 8080:80 \
+  -v /path/to/your/data:/var/lib/dav \
+  --name webdav-server \
+  aelhamamy/webdav
+#+END_SRC
+
+Then navigate to [[http://localhost:8080]] in your browser, or connect your WebDAV client.
+
+* Configuration
+
+Customize credentials and the authentication realm by passing environment variables at runtime:
+
+| Variable       | Default       | Description                                  |
+|----------------+---------------+----------------------------------------------|
+| ~WEBDAV_USER~  | ~admin~       | Username used to authenticate.               |
+| ~WEBDAV_PASS~  | ~password123~ | Password used to authenticate.               |
+| ~WEBDAV_REALM~ | ~WebDAV~      | Authentication realm text shown to clients.  |
+
+** Example with Custom Credentials
+
+#+BEGIN_SRC bash
+docker run -d \
+  -p 8080:80 \
+  -e WEBDAV_USER="myuser" \
+  -e WEBDAV_PASS="SuperSecurePass99!" \
+  -e WEBDAV_REALM="My Secure Cloud" \
+  -v /home/user/share:/var/lib/dav \
+  --name secure-webdav \
+  aelhamamy/webdav
+#+END_SRC
+
+* Persistent Storage
+
+To persist your files, mount a host directory to the container's storage path (~/var/lib/dav~):
+
+#+BEGIN_SRC bash
+-v /host/data/directory:/var/lib/dav
+#+END_SRC
+
+#+BEGIN_QUOTE
+*Note:* The Apache process must be able to read and write the mounted directory. Ensure the host directory is accessible to the container's web server user, for example:
+
+#+BEGIN_SRC bash
+chmod -R 755 /host/data/directory   # read/traverse for all, write for owner
+#+END_SRC
+
+or, if the container writes as a different UID:
+
+#+BEGIN_SRC bash
+chmod -R 775 /host/data/directory   # add group write
+#+END_SRC
+#+END_QUOTE
+
+* Technical Details
+
+- *Base Image* :: ~ubuntu:26.04~
+- *Exposed Port* :: ~80~
+- *Apache Modules* :: ~dav~, ~dav_fs~, ~auth_digest~
+
+* License
+
+Released under the MIT License. See [[file:LICENSE]] for details.
